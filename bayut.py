@@ -1,8 +1,8 @@
-import selenium.webdriver.common.timeouts
-from selenium.webdriver.common.keys import Keys
-
 from website import Webpage
+from selenium.webdriver.common.keys import Keys
 from selenium.common.exceptions import NoSuchElementException
+from time import sleep
+from selenium import webdriver
 
 
 class Bayut(Webpage):
@@ -12,70 +12,155 @@ class Bayut(Webpage):
         Webpage.__init__(self, web_browser=web_browser)
         self.get_webpage()
 
-    def get_change_purpose_element(self):
-        self.get_an_element_by_class(class_value='')
-
-    def get_search_location_elemnemt(self):
-        search_element = self.get_an_element_by_class(class_value='_6a3a3de9')
-        if search_element:
-            return search_element
-        else:
-            return False
+    def get_search_location_element(self):
+        search_element = \
+            self.get_a_specific_element(method='xpath',
+                                        value='//*[@id="body-wrapper"]/header/div[4]/div/div[2]/div/div[1]/div[2]/div/div/ul/input')
+        return search_element
 
     @staticmethod
-    def send_value_to_search_loaction_element(search_element, value):
-        search_element.send_keys(value)
-        return value
+    def send_value_to_search_location_element(search_element, value):
+        if search_element:
+            search_element.send_keys(value)
+            return value
+        return False
 
     @staticmethod
     def perform_submit_into_search_location(search_element):
         if search_element:
-            search_element.submit()
+            search_element.send_keys(Keys.ENTER)
+            return True
+        return False
 
     def get_find_button_element(self):
-        try:
-            find_button = self.get_an_element_by_class(class_value="f6d94e28")
-        except NoSuchElementException:
-            find_button = None
+        find_button = self.get_a_specific_element(method='xpath',
+                                                  value='//*[@id="body-wrapper"]/header/div[4]/div/div[2]/div/div[2]/a')
+        return find_button
 
-        if find_button:
-            return find_button
-        else:
-            return False, "The element doesn't exists"
-
-    def click_find_button(self):
-        find_button = self.get_find_button_element()
+    @staticmethod
+    def click_find_button(find_button):
         if find_button:
             find_button.click()
+            return True
+        return False
 
     def get_scroll_down_element_search(self):
-        try:
-            scroll_element = self.get_an_element_by_class(class_value='_9a03d150')
-        except NoSuchElementException:
-            scroll_element = None
+        scroll_element = \
+            self.get_a_specific_element(method='xpath',
+                                        value='//*[@id="body-wrapper"]/header/div[4]/div/div[2]/div/div[1]/div[2]/div/div/div/ul')
+        return scroll_element
 
-        if scroll_element:
-            return True, scroll_element
-        else:
-            return False, f"The scroll element didn't appear."
+    def get_change_client_purpose_drop_down_button(self):
+        drop_down_button = self.get_a_specific_element(method='class',
+                                                       value='eedc221b')
+        return drop_down_button
 
 
-    def verify_each_element_from_scroll(self):
-        pass
+    @staticmethod
+    def click_client_purpose_drop_down_button(drop_down_button):
+        if drop_down_button:
+            drop_down_button.click()
+            return True
+        return False
 
-    def change_client_purporse(self):
-        pass
+    def get_change_client_purpose_variants_element(self):
+        client_purpose_variants = self.get_a_specific_element(method='xpath',
+                                                              value='//*[@id="body-wrapper"]/header/div[4]/div/div[2]/div/div[1]/div[1]/div/div[2]/div/div[1]/div')
+        return client_purpose_variants
 
-    def complete_search_location(self):
-        pass
+    def get_elements_from_client_purpose_drop(self):
+        client_purpose_variants_drop = self.get_a_specific_element(method='xpath', value='//*[@id="body-wrapper"]/header/div[4]/div/div[2]/div/div[1]/div[1]/div/div[2]/div/div[1]/div/span',
+                                                                   multiple=True)
+        return client_purpose_variants_drop
 
-    def find_location(self):
-        pass
+    @staticmethod
+    def check_client_purpose_choices_values(client_purpose_variants_drop):
+        if client_purpose_variants_drop:
+            if (client_purpose_variants_drop[0] == 'Buy') and (client_purpose_variants_drop[1] == 'Rent'):
+                return True
+            else:
+                return False
+        return False
 
-    def verify_locations_results(self):
-        pass
+    @staticmethod
+    def choose_client_purpose(client_purpose_variants_drop, choice):
+        if client_purpose_variants_drop:
+            for elem in client_purpose_variants_drop:
+                if elem.text == choice:
+                    elem.click()
+                    return True
+        return False
 
-bayut1 = Bayut(web_browser='Firefox')
-search_elem1 = bayut1.get_search_location_elemnemt()
-bayut1.send_value_to_search_loaction_element(search_elem1, value="Dubai Marina")
-bayut1.perform_submit_into_search_location(search_elem1)
+    def get_find_location_results(self):
+        find_location_results = \
+            self.get_a_specific_element(method='class',
+                                        value='ef447dde',
+                                        multiple=True)
+        return find_location_results
+
+    def get_location_for_each_result(self):
+        results_locations = self.get_a_specific_element(method='class',
+                                                        value='_7afabd84',
+                                                        multiple=True)
+        return results_locations
+
+    @staticmethod
+    def verify_the_results_location(location, searched_location):
+        if location:
+            for elem in location:
+                if searched_location not in elem.text:
+                    return False
+            return True
+        return False
+
+    def get_popular_searches_container(self):
+        popular_searches_container = self.get_a_specific_element(method='xpath', value='//*[@id="body-wrapper"]/main/div[5]/div')
+        return popular_searches_container
+
+    def get_popular_searches_type(self):
+        popular_searches_type = self.get_a_specific_element(method='xpath', value='//*[@id="body-wrapper"]/main/div[5]/div/div[2]/div[2]/div/div/div', multiple=True)
+        return popular_searches_type
+
+    @staticmethod
+    def choose_popular_search_type(popular_search_types, type):
+        if popular_search_types:
+            for elem in popular_search_types:
+                if elem.text == type:
+                    elem.click()
+                    return True
+        return False
+
+    def get_popular_searches_variants(self):
+        popular_searches_variants = self.get_a_specific_element(method='xpath',
+                                                                value='//*[@id="body-wrapper"]/main/div[5]/div/div[2]/div[1]/div[2]/*',
+                                                                multiple=True)
+        return popular_searches_variants
+
+    def get_dubai_apartments_for_rent_list(self):
+        dubai_apartments_for_rent_list = self.get_a_specific_element(method='xpath',
+                                                                     value='//*[@id="body-wrapper"]/main/div[5]/div/div[2]/div[1]/div[2]/div/div[1]/div[1]/div/div/div[2]/div[1]/ul/li',
+                                                                     multiple=True)
+        return dubai_apartments_for_rent_list
+
+    def get_dubai_apartments_for_rent_hyper_links(self, dubai_apartments):
+        list1 = list()
+        if dubai_apartments:
+            for elem in dubai_apartments:
+                link_to_apartment = self.get_subelements_of_element(method='xpath', elem=elem, value='.//*')
+                list1.append(link_to_apartment)
+            print([elem.text for elem in list1])
+            return list1
+
+    def get_show_more_button_popular_searches(self):
+        show_more_popular_searches = self.get_a_specific_element(method='xpath',
+                                                                 value="//*[@id='body-wrapper']/main/div[5]/div/div[2]/div[1]/div[2]/div/div[1]/div[2]"
+                                                                 )
+        return show_more_popular_searches
+
+    @staticmethod
+    def click_show_more_popular_searches(show_more_button):
+        if show_more_button:
+            show_more_button.click()
+            return True
+        return False
+
